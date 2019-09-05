@@ -1,6 +1,6 @@
 # DynamoDB Sink Plugin
 
-[![cm-available](https://cdap-users.herokuapp.com/assets/cm-available.svg)](https://docs.cask.co/cdap/current/en/integrations/cask-market.html)
+[![cm-available](https://cdap-users.herokuapp.com/assets/cm-available.svg)](https://docs.cdap.io/cdap/current/en/integrations/cask-market.html)
 ![cdap-batch-sink](https://cdap-users.herokuapp.com/assets/cdap-batch-sink.svg)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Join CDAP community](https://cdap-users.herokuapp.com/badge.svg?t=wrangler)](https://cdap-users.herokuapp.com?t=1)
@@ -14,7 +14,7 @@ Getting Started
 
 Prerequisites
 --------------
-CDAP version 3.5.x or higher.
+CDAP version 6.0.x or higher.
 
 Building Plugins
 ----------------
@@ -38,9 +38,6 @@ You can deploy a plugin using the CDAP CLI::
 
 You can build without running tests: ``mvn clean install -DskipTests``
 
-Limitations
------------
-- UI doesn't support schema's with hyphens (-), so the plugin currently transforms all the schemas with - into underscores (_). This change will be reverted after this is fixed: https://issues.cask.co/browse/HYDRATOR-1125
 
 Mailing Lists
 -------------
@@ -61,7 +58,7 @@ CDAP IRC Channel: #cdap on irc.freenode.net
 License and Trademarks
 ======================
 
-Copyright © 2017 Cask Data, Inc.
+Copyright © 2017-2019 Cask Data, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
 in compliance with the License. You may obtain a copy of the License at
