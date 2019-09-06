@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package io.cdap.plugin;
+package io.cdap.plugin.dynamo.sink;
 
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
@@ -34,7 +34,7 @@ import io.cdap.cdap.etl.api.batch.BatchSink;
 import io.cdap.cdap.etl.api.batch.BatchSinkContext;
 import io.cdap.plugin.common.ReferenceBatchSink;
 import io.cdap.plugin.common.ReferencePluginConfig;
-import io.cdap.plugin.utils.DynamoDBConstants;
+import io.cdap.plugin.dynamo.sink.utils.DynamoDBConstants;
 import org.apache.hadoop.io.NullWritable;
 
 import java.util.HashMap;
