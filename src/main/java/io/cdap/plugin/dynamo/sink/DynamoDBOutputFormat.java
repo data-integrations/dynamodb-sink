@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package io.cdap.plugin;
+package io.cdap.plugin.dynamo.sink;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
@@ -28,8 +28,8 @@ import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException;
 import com.amazonaws.services.dynamodbv2.model.TableDescription;
 import com.amazonaws.services.dynamodbv2.model.TableStatus;
 import com.google.common.base.Splitter;
-import io.cdap.plugin.utils.DynamoDBConstants;
-import io.cdap.plugin.utils.DynamoDBUtil;
+import io.cdap.plugin.dynamo.sink.utils.DynamoDBConstants;
+import io.cdap.plugin.dynamo.sink.utils.DynamoDBUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.OutputCommitter;

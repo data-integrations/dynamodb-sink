@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package io.cdap.plugin.utils;
+package io.cdap.plugin.dynamo.sink.utils;
 
 /**
  * Contains constants used for the Hadoop to DynamoDB connection.
