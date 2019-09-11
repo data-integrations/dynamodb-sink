@@ -15,72 +15,120 @@
  */
 package io.cdap.plugin.dynamo.sink;
 
-import io.cdap.cdap.etl.mock.common.MockPipelineConfigurer;
+import io.cdap.cdap.api.data.schema.Schema;
+import io.cdap.cdap.etl.api.validation.CauseAttributes;
+import io.cdap.cdap.etl.api.validation.ValidationFailure;
+import io.cdap.cdap.etl.mock.validation.MockFailureCollector;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.List;
 
 /**
  * Unit Tests for DynamoDBConfig.
  */
 public class DynamoDBBatchSinkConfigTest {
+  private static final String MOCK_STAGE = "mockStage";
+  private static final Schema SCHEMA = Schema.recordOf(
+    "schema",
+    Schema.Field.of("Id", Schema.of(Schema.Type.LONG)),
+    Schema.Field.of("Region", Schema.of(Schema.Type.STRING))
+  );
+  private static final DynamoDBBatchSinkConfig VALID_CONFIG = new DynamoDBBatchSinkConfig(
+    "Referencename",
+    "testKey",
+    "testKey",
+    "us-east-1",
+    null,
+    "dynamoDBTest",
+    "Id:N,Region:RANGE",
+    "Id:HASH,Region:RANGE",
+    null,
+    null
+  );
 
   @Test
-  public void testInvalidTableNameLength() throws Exception {
-    BatchDynamoDBSink.DynamoDBConfig config = new
-      BatchDynamoDBSink.DynamoDBConfig("Referencename", "testKey", "testkey", "us-east-1", null, "tt", "Id:N",
-                                       "Id:HASH", null, null);
-    MockPipelineConfigurer configurer = new MockPipelineConfigurer(null);
-    try {
-      new BatchDynamoDBSink(config).configurePipeline(configurer);
-      Assert.fail();
-    } catch (IllegalArgumentException e) {
-      Assert.assertEquals("Table name 'tt' does not follow the DynamoDB naming rules. Table name must be between 3 " +
-                            "and 255 characters long.", e.getMessage());
-    }
+  public void testValidConfig() {
+    MockFailureCollector failureCollector = new MockFailureCollector(MOCK_STAGE);
+    VALID_CONFIG.validateTableName(failureCollector);
+    VALID_CONFIG.validatePrimaryKey(failureCollector, SCHEMA);
+    Assert.assertTrue(failureCollector.getValidationFailures().isEmpty());
   }
 
   @Test
-  public void testInvalidTableName() throws Exception {
-    BatchDynamoDBSink.DynamoDBConfig config = new
-      BatchDynamoDBSink.DynamoDBConfig("Referencename", "testKey", "testkey", "us-east-1", null, "table%^name", "Id:N",
-                                       "Id:HASH", null, null);
-    MockPipelineConfigurer configurer = new MockPipelineConfigurer(null);
-    try {
-      new BatchDynamoDBSink(config).configurePipeline(configurer);
-      Assert.fail();
-    } catch (IllegalArgumentException e) {
-      Assert.assertEquals("Table name 'table%^name' does not follow the DynamoDB naming rules. Table names can " +
-                            "contain only the following characters: 'a-z, A-Z, 0-9, underscore(_), dot(.) and dash(-)" +
-                            "'.", e.getMessage());
-    }
+  public void testInvalidTableNameLength() {
+    DynamoDBBatchSinkConfig config = DynamoDBBatchSinkConfig.builder(VALID_CONFIG)
+      .setTableName("tt")
+      .build();
+
+    MockFailureCollector failureCollector = new MockFailureCollector(MOCK_STAGE);
+    config.validateTableName(failureCollector);
+    assertValidationFail(failureCollector, CauseAttributes.STAGE_CONFIG, DynamoDBBatchSinkConfig.TABLE_NAME);
+  }
+
+  @Test
+  public void testInvalidTableName() {
+    DynamoDBBatchSinkConfig config = DynamoDBBatchSinkConfig.builder(VALID_CONFIG)
+      .setTableName("table%^name")
+      .build();
+
+    MockFailureCollector failureCollector = new MockFailureCollector(MOCK_STAGE);
+    config.validateTableName(failureCollector);
+    assertValidationFail(failureCollector, CauseAttributes.STAGE_CONFIG, DynamoDBBatchSinkConfig.TABLE_NAME);
   }
 
   @Test
   public void testMoreThankTwoPrimaryKeys() {
-    BatchDynamoDBSink.DynamoDBConfig config = new
-      BatchDynamoDBSink.DynamoDBConfig("Referencename", "table%^name", "testKey", "us-east-1", null, "dynamoDBTest",
-                                       "Id:N,Region:RANGE,State:RANGE", "Id:HASH,Region:RANGE,State:RANGE", null, null);
-    MockPipelineConfigurer configurer = new MockPipelineConfigurer(null);
-    try {
-      new BatchDynamoDBSink(config).configurePipeline(configurer);
-      Assert.fail();
-    } catch (IllegalArgumentException e) {
-      Assert.assertEquals("Primary key can have only 2 values HASH and RANGE.", e.getMessage());
-    }
+    DynamoDBBatchSinkConfig config = DynamoDBBatchSinkConfig.builder(VALID_CONFIG)
+      .setPrimaryKeyFields("Id:N,Region:RANGE,State:RANGE")
+      .setPrimaryKeyTypes("Id:HASH,Region:RANGE,State:RANGE")
+      .build();
+
+    MockFailureCollector failureCollector = new MockFailureCollector(MOCK_STAGE);
+    config.validatePrimaryKey(failureCollector, SCHEMA);
+    assertValidationFail(failureCollector, CauseAttributes.STAGE_CONFIG, DynamoDBBatchSinkConfig.PRIMARY_KEY_FIELDS);
+  }
+
+  @Test
+  public void testInvalidPrimaryKeyType() {
+    DynamoDBBatchSinkConfig config = DynamoDBBatchSinkConfig.builder(VALID_CONFIG)
+      .setPrimaryKeyFields("Id:N,Region:RANGE")
+      .setPrimaryKeyTypes("Region:RANGE,State:RANGE")
+      .build();
+
+    MockFailureCollector failureCollector = new MockFailureCollector(MOCK_STAGE);
+    config.validatePrimaryKey(failureCollector, SCHEMA);
+    assertValidationFail(failureCollector, CauseAttributes.STAGE_CONFIG, DynamoDBBatchSinkConfig.PRIMARY_KEY_TYPES);
   }
 
   @Test
   public void testInvalidPrimaryKeys() {
-    BatchDynamoDBSink.DynamoDBConfig config = new
-      BatchDynamoDBSink.DynamoDBConfig("Referencename", "table%^name", "testKey", "us-east-1", null, "dynamoDBTest",
-                                       "Id:N,Region:RANGE", "Region:RANGE,State:RANGE", null, null);
-    MockPipelineConfigurer configurer = new MockPipelineConfigurer(null);
-    try {
-      new BatchDynamoDBSink(config).configurePipeline(configurer);
-      Assert.fail();
-    } catch (IllegalArgumentException e) {
-      Assert.assertEquals("Please specify attribute value and key types for the same primary keys. Key type for [Id] " +
-                            "is not specified.", e.getMessage());
-    }
+    Schema schema = Schema.recordOf(
+      "schema",
+      Schema.Field.of("Id", Schema.of(Schema.Type.LONG)),
+      Schema.Field.of("Region", Schema.nullableOf(Schema.of(Schema.Type.STRING)))
+    );
+
+    DynamoDBBatchSinkConfig config = DynamoDBBatchSinkConfig.builder(VALID_CONFIG)
+      .setPrimaryKeyFields("Id:N,Region:RANGE")
+      .setPrimaryKeyTypes("Id:HASH,Region:RANGE")
+      .build();
+
+    MockFailureCollector failureCollector = new MockFailureCollector(MOCK_STAGE);
+    config.validatePrimaryKey(failureCollector, schema);
+    assertValidationFail(failureCollector, CauseAttributes.INPUT_SCHEMA_FIELD, "Region");
+  }
+
+  private void assertValidationFail(MockFailureCollector failureCollector, String attributeName,
+                                    String attributeValue) {
+    List<ValidationFailure> failureList = failureCollector.getValidationFailures();
+    Assert.assertEquals(1, failureList.size());
+
+    ValidationFailure failure = failureList.get(0);
+    List<ValidationFailure.Cause> causeList = failure.getCauses();
+    Assert.assertEquals(1, causeList.size());
+
+    ValidationFailure.Cause cause = causeList.get(0);
+    Assert.assertEquals(attributeValue, cause.getAttribute(attributeName));
   }
 }
