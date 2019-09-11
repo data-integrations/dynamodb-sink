@@ -17,7 +17,6 @@ package io.cdap.plugin.dynamo.sink;
 
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
-import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import io.cdap.cdap.api.annotation.Description;
 import io.cdap.cdap.api.annotation.Name;
@@ -73,8 +72,7 @@ public class BatchDynamoDBSink extends ReferenceBatchSink<StructuredRecord, Null
 
   @Override
   public void transform(StructuredRecord input, Emitter<KeyValue<NullWritable, Item>> emitter) throws Exception {
-    Set<String> primaryKeyAttributes = Splitter.on(',').trimResults().withKeyValueSeparator(":")
-      .split(config.getPrimaryKeyFields()).keySet();
+    Set<String> primaryKeyAttributes = config.getPrimaryKeyFieldsSet();
     PrimaryKey primaryKey = new PrimaryKey();
     Item item = new Item();
     for (Schema.Field field : input.getSchema().getFields()) {

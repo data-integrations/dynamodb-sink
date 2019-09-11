@@ -129,18 +129,17 @@ public class DynamoDBBatchSinkConfig extends ReferencePluginConfig {
   }
 
   public static Builder builder(DynamoDBBatchSinkConfig copy) {
-    Builder builder = new Builder();
-    builder.referenceName = copy.referenceName;
-    builder.accessKey = copy.getAccessKey();
-    builder.secretAccessKey = copy.getSecretAccessKey();
-    builder.regionId = copy.getRegionId();
-    builder.endpointUrl = copy.getEndpointUrl();
-    builder.tableName = copy.getTableName();
-    builder.primaryKeyFields = copy.getPrimaryKeyFields();
-    builder.primaryKeyTypes = copy.getPrimaryKeyTypes();
-    builder.readCapacityUnits = copy.getReadCapacityUnits();
-    builder.writeCapacityUnits = copy.getWriteCapacityUnits();
-    return builder;
+    return builder()
+      .setReferenceName(copy.referenceName)
+      .setAccessKey(copy.getAccessKey())
+      .setSecretAccessKey(copy.getSecretAccessKey())
+      .setRegionId(copy.getRegionId())
+      .setEndpointUrl(copy.getEndpointUrl())
+      .setTableName(copy.getTableName())
+      .setPrimaryKeyFields(copy.getPrimaryKeyFields())
+      .setPrimaryKeyTypes(copy.getPrimaryKeyTypes())
+      .setReadCapacityUnits(copy.getReadCapacityUnits())
+      .setWriteCapacityUnits(copy.getWriteCapacityUnits());
   }
 
   public String getAccessKey() {
@@ -215,10 +214,8 @@ public class DynamoDBBatchSinkConfig extends ReferencePluginConfig {
    * Validates the partition and sort key provided by the user.
    */
   public void validatePrimaryKey(FailureCollector failureCollector, Schema inputSchema) {
-    Set<String> primaryKeyAttributes = Splitter.on(',').trimResults().withKeyValueSeparator(":")
-      .split(primaryKeyFields).keySet();
-    Set<String> primaryKeySchema = Splitter.on(',').trimResults().withKeyValueSeparator(":")
-      .split(primaryKeyTypes).keySet();
+    Set<String> primaryKeyAttributes = getPrimaryKeyFieldsSet();
+    Set<String> primaryKeySchema = getPrimaryKeyTypesSet();
 
     if (primaryKeyAttributes.size() > 2 || primaryKeySchema.size() > 2) {
       failureCollector.addFailure("Invalid primary key.",
@@ -245,6 +242,16 @@ public class DynamoDBBatchSinkConfig extends ReferencePluginConfig {
         }
       }
     }
+  }
+
+  public Set<String> getPrimaryKeyTypesSet() {
+    return Splitter.on(',').trimResults().withKeyValueSeparator(":")
+      .split(primaryKeyTypes).keySet();
+  }
+
+  public Set<String> getPrimaryKeyFieldsSet() {
+    return Splitter.on(',').trimResults().withKeyValueSeparator(":")
+      .split(primaryKeyFields).keySet();
   }
 
   /**
